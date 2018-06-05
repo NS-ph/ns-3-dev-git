@@ -23,7 +23,7 @@
 #include "ns3/address.h"
 #include "mih-tlv.h"
 
-NS_LOG_COMPONENT_DEFINE ("Tlv");
+NS_LOG_COMPONENT_DEFINE ("Tlv_mih");
 
 namespace ns3 {
   namespace mih {
@@ -154,10 +154,19 @@ namespace ns3 {
       i.Next (formerBufferSize);
       i.WriteU8 (tlvTypeValue);
       i.WriteU8 (address.GetSerializedSize ());
-      i.WriteU8 (address.m_type);
+      /*i.WriteU8 (address.m_type);
       i.WriteU8 (address.m_len);
       const uint8_t *data = address.m_data;
       for (uint32_t j = 0; j < address.m_len; j++, data++)
+        {
+          i.WriteU8 (*data);
+        }*/
+      uint8_t buf[Address::MAX_SIZE];
+      address.CopyAllTo (buf, Address::MAX_SIZE);
+      i.WriteU8 (buf[0]);
+      i.WriteU8 (buf[1]);
+      const uint8_t *data = buf + 2;
+      for (uint32_t j = 0; j < address.GetLength (); j++, data++)
         {
           i.WriteU8 (*data);
         }
@@ -167,16 +176,28 @@ namespace ns3 {
     {
       Buffer::Iterator i = buffer.Begin ();
       NS_ASSERT_MSG (i.ReadU8 () == tlvTypeValue, "Address TLV type values mismatch!");
+
       i.Next (1);
-      address.m_type = i.ReadU8 ();
+      /*address.m_type = i.ReadU8 ();
       address.m_len = i.ReadU8 ();
       uint8_t *data = address.m_data;
       for (uint32_t j = 0; j < address.m_len; j++, data++)
         {
           *data = i.ReadU8 ();
         }
-      buffer.RemoveAtStart (1 + 1 + 1 + 1 + address.m_len);
-      return 1 + 1 + 1 + 1 + address.m_len;
+      */
+      uint8_t buf[Address::MAX_SIZE];
+      buf[0] = i.ReadU8 ();
+      buf[1] = i.ReadU8 ();
+      uint8_t * data = buf + 2;
+
+      for (uint32_t j = 0; j < buf[1] ; j++, data++)
+        {
+          *data = i.ReadU8 ();
+        }
+      address=Address(buf[0], data, buf[1]);
+      buffer.RemoveAtStart (1 + 1 + 1 + 1 + address.GetLength ());
+      return 1 + 1 + 1 + 1 + address.GetLength ();
     }
     // TLV for bool values;
     uint32_t 
@@ -391,9 +412,10 @@ namespace ns3 {
       uint32_t totalBytesRead = 0;
       uint32_t roomSize;
       uint32_t payloadLengthValue = 0;
-      Buffer::Iterator i = buffer.Begin ();
-      NS_ASSERT (i.ReadU8 () == tlvTypeValue);
-      totalBytesRead++;
+      Buffer::Iterator i = buffer.Begin();
+      NS_ASSERT (i.PeekU8() == tlvTypeValue);
+       i.ReadU8 ();
+       totalBytesRead++;
       roomSize = i.ReadU8 ();
       totalBytesRead++;
       

@@ -21,8 +21,11 @@
 #include "ns3/log.h"
 #include "ns3/boolean.h"
 #include "ns3/mac48-address.h"
+#include "ns3/pointer.h"
+#include "ns3/string.h"
 #include "simple-mih-link-sap.h"
 #include "mih-device-information.h"
+#include "ns3/double.h"
 
 NS_LOG_COMPONENT_DEFINE ("SimpleMihLinkSap");
 
@@ -34,17 +37,40 @@ namespace ns3 {
     TypeId 
     SimpleMihLinkSap::GetTypeId (void)
     {
+      Ptr<UniformRandomVariable> urv = CreateObject<UniformRandomVariable> ();
+      urv->SetAttribute( "Min", DoubleValue( 0 ) );
+      urv->SetAttribute( "Max", DoubleValue( 0.5 ) );
+      double tmp = urv->GetValue ();
+      std::stringstream sstr;
+      sstr << tmp;
+
+      Ptr<UniformRandomVariable> urv2 = CreateObject<UniformRandomVariable> ();
+      urv2->SetAttribute( "Min", DoubleValue( 0 ) );
+      urv2->SetAttribute( "Max", DoubleValue( 3 ) );
+      double tmp2 = urv->GetValue ();
+      std::stringstream sstr2;
+      sstr2 << tmp2;
+
       static TypeId tid = TypeId ("ns3::mih::SimpleMihLinkSap")
 	.SetParent<MihLinkSap> ()
 	.AddConstructor<SimpleMihLinkSap> ()
 	.AddAttribute ("EventInterval", "A RandomVariable used to pick the event triggering interval",
-		       RandomVariableValue (UniformVariable (0, 0.5)),
-		       MakeRandomVariableAccessor (&SimpleMihLinkSap::m_eventTriggerInterval),
-		       MakeRandomVariableChecker ())
+		       //RandomVariableValue (UniformVariable (0, 0.5)),
+                       //StringValue ("ns3::ConstantRandomVariable [const=" + sstr.str() + "]"),
+                       StringValue ("ns3::UniformRandomVariable[Min=0.0|Max=0.5]"),
+		       //MakeRandomVariableAccessor (&SimpleMihLinkSap::m_eventTriggerInterval),
+                       MakePointerAccessor (&SimpleMihLinkSap::m_eventTriggerInterval),
+                       //MakeRandomVariableChecker ())
+                       MakePointerChecker<RandomVariableStream> ())
 	.AddAttribute ("AlternatesN", "A RandomVariable used to pick the next trigger action",
-		       RandomVariableValue (UniformVariable (0, 3)),
-		       MakeRandomVariableAccessor (&SimpleMihLinkSap::m_rngChoice),
-		       MakeRandomVariableChecker ())
+		       //RandomVariableValue (UniformVariable (0, 3)),
+                       //StringValue ("ns3::UniformRandomVariable (0,3)"),
+                       //StringValue ("ns3::ConstantRandomVariable [const=" + sstr2.str() + "]"),
+                       StringValue ("ns3::UniformRandomVariable[Min=0.0|Max=3.0]"),
+                       //MakeRandomVariableAccessor (&SimpleMihLinkSap::m_rngChoice),
+                       MakePointerAccessor (&SimpleMihLinkSap::m_rngChoice),
+                       //MakeRandomVariableChecker ())
+                       MakePointerChecker<RandomVariableStream> ())
 	.AddAttribute ("MihfId", "Mih Function Identifier",
 		       MihfIdValue (MihfId ("default-SimpleMihLinkSap@ns3")),
 		       MakeMihfIdAccessor (&SimpleMihLinkSap::m_mihfId),
@@ -216,8 +242,8 @@ namespace ns3 {
       actions[1] = &SimpleMihLinkSap::TriggerLinkUp;
       actions[2] = &SimpleMihLinkSap::TriggerLinkDown;
 
-      Time nextInterval = Seconds (m_eventTriggerInterval.GetValue ());
-      uint8_t choice = uint8_t (m_rngChoice.GetValue ());
+      Time nextInterval = Seconds (m_eventTriggerInterval->GetValue ());
+      uint8_t choice = uint8_t (m_rngChoice->GetValue ());
       std::string choiceStr = "INVALID";
       switch (choice)
 	{
@@ -240,7 +266,8 @@ namespace ns3 {
 	  break;
 	}
       NS_LOG_LOGIC ("A " << choiceStr << " trigger will occur at " << (Simulator::Now ().GetSeconds () + nextInterval.GetSeconds ()) << "s");
-      m_nextEventId = Simulator::Schedule (nextInterval, actions[choice], this);
+      //m_nextEventId = Simulator::Schedule (nextInterval, actions[choice], this);
+      m_nextEventId = Simulator::Schedule (Now (), actions[choice], this);
       return;
     }
     void

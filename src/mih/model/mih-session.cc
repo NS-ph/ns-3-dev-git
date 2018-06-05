@@ -181,7 +181,7 @@ namespace ns3 {
     Session::DisposePendingResponse (void)
     {
       NS_LOG_FUNCTION (this);
-      NS_ASSERT (m_pendingResponseTransaction->IsToBeDeleted ());
+      NS_ASSERT_MSG(m_pendingResponseTransaction->IsToBeDeleted (), "should not be deleted yet");
       m_pendingResponseTransaction = 0;
     }
     void
@@ -252,6 +252,7 @@ namespace ns3 {
     MihRegisterResponseCallback 
     Session::ReceiveRegisterRequest (Ptr<Packet> packet, 
                                      uint16_t transactionId)
+
     {
       NS_LOG_FUNCTION (this);
       Ptr<RegisterResponseTransaction> registerResponseTransaction = 
@@ -261,7 +262,7 @@ namespace ns3 {
                                              GetToAddress (), 
                                              transactionId,
                                              m_socket);
-      registerResponseTransaction->SetNotifyDoneCallback (MakeCallback (&Session::NotifyPendingResponseDone, 
+      registerResponseTransaction->SetNotifyDoneCallback (MakeCallback (&Session::NotifyPendingResponseDone,
                                                                         this));
       NS_ASSERT (m_pendingResponseTransaction == 0);
       NS_LOG_WARN ("Check to assure that the following line is bug free!");

@@ -22,7 +22,8 @@
 #define   	SIMPLE_MIH_LINK_SAP_H
 
 #include "ns3/nstime.h"
-#include "ns3/random-variable.h"
+//#include "ns3/random-variable.h"
+#include "ns3/random-variable-stream.h"
 #include "ns3/event-id.h"
 #include "mihf-id.h"
 #include "mih-link-sap.h"
@@ -72,9 +73,9 @@ namespace ns3 {
       virtual Ptr<DeviceStatesResponse> GetDeviceStates (void);
       LinkIdentifier m_linkIdentifier;
       EventId m_nextEventId;
-      RandomVariable  m_eventTriggerInterval;       // rng for next Tx
+      Ptr<RandomVariableStream>   m_eventTriggerInterval;       // rng for next Tx
 						    // Time
-      RandomVariable m_rngChoice;  // rng for next action to perform
+      Ptr<RandomVariableStream>  m_rngChoice;  // rng for next action to perform
 				    // in trigger
       MihfId m_mihfId;
       bool m_powerUp;

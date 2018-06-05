@@ -38,55 +38,48 @@ main (int argc, char *argv[])
   Buffer buffer2;
   LinkIdentifier linkIdentifier;
   LinkIdentifier newLinkIdentifier;
-  Mac48Address m_addresses[2]; 
+  Mac48Address m_addresses[2];
   m_addresses[0] = ("00:00:00:00:00:82");
   m_addresses[1] = ("00:00:00:00:00:88");
   Ipv6Address prefix0 ("2002:1:1::");
   Ipv6Address prefix1 ("3303:1:1::");
   Ptr<Packet> p;
-  const uint8_t *packetData;
-  uint32_t packetPayloadSize;
+  uint8_t * packetData=0;
+   uint32_t packetPayloadSize;
 
   //   Fill the buffer;
-  linkIdentifier = LinkIdentifier (LinkType (LinkType::WIRELESS_802_11),
-                                   (Ipv6Address::MakeAutoconfiguredAddress(m_addresses[0], prefix0)),
-                                   (Ipv6Address::MakeAutoconfiguredAddress(m_addresses[1], prefix1)));
-  std::cout << "TLV-Serializing the LinkIdentifier ..." << std::endl;
-  std::cout << linkIdentifier << std::endl;
-  linkIdentifier.TlvSerialize (buffer);
-  //   PrintTlvBuffer (std::cout, buffer);
-  //  Create the packet;
-  std::cout << "Creating one empty packet ..." << std::endl;
-  std::cout << "Filling LinkIdentifier in the packet payload ..." << std::endl;
-  p = Create<Packet> (buffer.PeekData (), buffer.GetSize ());
-  std::cout << "Filling MihHeader at start of the packet ..." << std::endl;
-  mihHeader.SetVersion (MihHeader::VERSION_ONE);
-  mihHeader.SetServiceId (MihHeader::COMMAND);
-  mihHeader.SetOpCode (MihHeader::REQUEST);
-  mihHeader.SetActionId (MihHeader::MIH_NET_HO_COMMIT);
-  mihHeader.SetTransactionId (125);
-  mihHeader.SetPayloadLength (buffer.GetSize ());
-  p->AddHeader (mihHeader);
-  std::cout << "Printing the created packet ..." << std::endl;
-  p->Print (std::cout);
-  std::cout << std::endl;
-  std::cout << "Removing MihHeader from packet ..." << std::endl;
-  p->RemoveHeader (mihHeader2);
-  std::cout << "Printing the created packet ..." << std::endl;
-  p->Print (std::cout);
-  std::cout << std::endl;
-  std::cout << "Recovering LinkIdentifier from the packet payload ..." << std::endl;
-  packetPayloadSize = p->GetSize ();
-  packetData = p->PeekData ();
-  buffer2.AddAtStart (packetPayloadSize);
-  Buffer::Iterator i = buffer2.Begin ();
-  for (uint32_t j = 0; j < packetPayloadSize; j++, packetData++)
-    {
-      i.WriteU8 (*packetData);
-    }
-  newLinkIdentifier.TlvDeserialize (buffer2);
-  std::cout << newLinkIdentifier << std::endl;
-  std::cout << "Serialization is working fine! Now ready to transmit MIH packets troughout the network ..." << std::endl;
+   linkIdentifier = LinkIdentifier (LinkType (LinkType::WIRELESS_802_11),
+                                    (Ipv6Address::MakeAutoconfiguredAddress(m_addresses[0], prefix0)),
+                                    (Ipv6Address::MakeAutoconfiguredAddress(m_addresses[1], prefix1)));
+   std::cout << "TLV-Serializing the LinkIdentifier ..." << std::endl;
+   std::cout << linkIdentifier << std::endl;
+   linkIdentifier.TlvSerialize (buffer);
+   //   PrintTlvBuffer (std::cout, buffer);
+     //  Create the packet;
+     std::cout << "Creating one empty packet ..." << std::endl;
+     std::cout << "Filling LinkIdentifier in the packet payload ..." << std::endl;
+     p = Create<Packet> (buffer.PeekData (), buffer.GetSize ());
+     std::cout << "Filling MihHeader at start of the packet ..." << std::endl;
+     mihHeader.SetVersion (MihHeader::VERSION_ONE);
+     mihHeader.SetServiceId (MihHeader::COMMAND);
+     mihHeader.SetOpCode (MihHeader::REQUEST);
+     mihHeader.SetActionId (MihHeader::MIH_NET_HO_COMMIT);
+     mihHeader.SetTransactionId (125);
+     mihHeader.SetPayloadLength (buffer.GetSize ());
+     p->AddHeader (mihHeader);
+     std::cout << "Printing the created packet ..." << std::endl;
+     p->Print (std::cout);
+     std::cout << std::endl;
+     std::cout << "Removing MihHeader from packet ..." << std::endl;
+     p->RemoveHeader (mihHeader2);
+     std::cout << "Printing the created packet ..." << std::endl;
+     p->Print (std::cout);
+     std::cout << std::endl;
+     std::cout << "Recovering LinkIdentifier from the packet payload ..." << std::endl;
+     packetPayloadSize = p->GetSize ();
+    p->CopyData (packetData, packetPayloadSize);
+
+  std::cout << "Serialization is working fine! Now ready to transmit MIH packets throughout the network ..." << std::endl;
   return 0;
 }
 

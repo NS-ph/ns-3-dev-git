@@ -16,6 +16,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  * Author: Providence SALUMU M. <Providence.Salumu_Munga@it-sudparis.eu>
+ *
  */
 
 #include "ns3/log.h"
@@ -179,12 +180,13 @@ namespace ns3 {
 
       if (m_tid == UdpSocketFactory::GetTypeId ())
         {
+    	  NS_LOG_DEBUG("USE UdpSocketFactory");
           if (FindSessionByToAddress (to, i))
             {
               return (*i);
             }
-          return 0;
-          NS_ASSERT (0);
+          //return 0;
+          //NS_ASSERT (0);
           Ptr<Session> session = Create<Session> ();
           session->GetRemoteEventSourceTrap ().SetSession (session);
           session->SetSocket (s);
@@ -198,6 +200,8 @@ namespace ns3 {
         }
       else if (m_tid == TcpSocketFactory::GetTypeId ())
         {
+    	  NS_LOG_DEBUG("USE TcpSocketFactory");
+
           if (!FindSessionBySocket (s, i))
             {
               NS_LOG_DEBUG ("You need first to create a connection  before a session can be searched for.");
@@ -232,7 +236,8 @@ namespace ns3 {
         {
           return (*i);
         }
-      
+
+      NS_LOG_DEBUG("Creat new session from= "<<from <<" to = "<< to);
       Ptr<Session> session = Create<Session> ();
       session->GetRemoteEventSourceTrap ().SetSession (session);
       Ptr<Socket> socket = Socket::CreateSocket (GetNode(), m_tid);
@@ -254,7 +259,7 @@ namespace ns3 {
     {
       NS_LOG_FUNCTION (this);
       Address addr = m_mihfIdTable[mihfid];
-      //      NS_LOG_LOGIC ("MihfId : " << mihfid << " <==> " << addr << " Address");
+      NS_LOG_LOGIC ("MihfId : " << mihfid << " <==> " << addr << " Address");
       return addr;
     }
     void 
@@ -289,7 +294,7 @@ namespace ns3 {
           MihHeader mihHeader;
           MihfId fromMihfId;
           MihfId toMihfId;
-          const uint8_t *packetData;
+          uint8_t * packetData= 0 ;
           uint32_t payloadSize;
           Buffer buffer;
           Ptr<MihFunction> mihFunction = GetObject<MihFunction> ();
@@ -298,10 +303,11 @@ namespace ns3 {
           
           // Remove header before  accessing the payload
           packet->RemoveHeader (mihHeader);
-          payloadSize = packet->GetSize ();
-          packetData = packet->PeekData ();
-          buffer.AddAtStart (payloadSize);
-          // Start removal of the payload;
+          payloadSize = packet->GetSize();
+          packet->CopyData (packetData, payloadSize);
+         buffer.AddAtStart (payloadSize);
+         // buffer.AddAtEnd(payloadSize);
+         // Start removal of the payload;
           Buffer::Iterator i = buffer.Begin ();
           for (uint32_t j = 0; j < payloadSize; j++, packetData++)
             {
@@ -310,7 +316,7 @@ namespace ns3 {
 
           fromMihfId.TlvDeserialize (buffer);
           toMihfId.TlvDeserialize (buffer);
-
+          
           NS_ASSERT (toMihfId == mihFunction->GetMihfId ());
 
           if (mihHeader.GetServiceId () == MihHeader::MANAGEMENT)

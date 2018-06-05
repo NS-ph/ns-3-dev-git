@@ -28,8 +28,8 @@ using namespace ns3::mih;
 using namespace ns3;
 
 static const uint8_t numberOfResponses = 10;
-UniformVariable rng (0, numberOfResponses);
-UniformVariable rng2 (0, 500);
+Ptr<UniformRandomVariable> rng (0, numberOfResponses);
+Ptr<UniformRandomVariable> rng2 (0, 500);
 const char* vendors[numberOfResponses] = {
   "Samsung", /*0*/
   "Cisco",
@@ -52,13 +52,13 @@ CreateVendor (int num)
   if (num % 2 == 0)
     {
       Ptr<BatteryLevel> battery;
-      battery = Create<BatteryLevel> (uint8_t(rng.GetValue ()));
+      battery = Create<BatteryLevel> (uint8_t(rng->GetValue ()));
       responses.push_back (battery);
     }
   else
     {
       Ptr<DeviceInformation> deviceInformation;
-      deviceInformation = Create<DeviceInformation> (std::string(vendors[int (rng.GetValue ())]));
+      deviceInformation = Create<DeviceInformation> (std::string(vendors[int (rng->GetValue ())]));
       responses.push_back (deviceInformation);
     }
 };
@@ -89,13 +89,13 @@ main (int argc, char *argv[])
   int numberOfIter = 0;
   while (numberOfIter < 5)
     {
-      numberOfIter = int (rng2.GetValue ());
+      numberOfIter = int (rng2->GetValue ());
     }
 
   std::cout << "There will be " << numberOfIter << " elements created!" << std::endl;
   for (int i = 0; i < numberOfIter; i++)
     {
-      CreateVendor (int (rng2.GetValue ()));      
+      CreateVendor (int (rng2->GetValue ()));
     }
   responsesDup = responses;
   responses.clear ();
